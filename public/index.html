@@ -55,6 +55,208 @@
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 font-sans min-h-screen transition-colors duration-200">
+    <!-- GDPR Cookie Consent Banner -->
+    <div id="cookieConsent" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-[100] shadow-lg transform translate-y-full transition-transform duration-300" style="display: none;">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex-1">
+                <p class="text-sm">
+                    <span class="font-semibold">🍪 Cookie & Privacy Notice:</span>
+                    This application uses essential cookies and processes data to provide AI-powered customer support.
+                    We store your preferences locally and send chat messages to Google's Gemini AI for processing.
+                    <button onclick="openPrivacyModal()" class="underline hover:text-primary ml-1">Learn more about our privacy practices</button>
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="declineCookies()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors">
+                    Decline Optional
+                </button>
+                <button onclick="acceptCookies()" class="px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-sm font-medium transition-colors">
+                    Accept All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyModal" class="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="bg-primary px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span class="material-icons-outlined">privacy_tip</span>
+                    Privacy Policy & Data Protection
+                </h2>
+                <button onclick="closePrivacyModal()" class="text-white/70 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+            <!-- Modal Content -->
+            <div class="overflow-y-auto p-6 space-y-6 text-gray-700 dark:text-gray-300">
+                <!-- Academic Project Notice -->
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <h3 class="font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-2 mb-2">
+                        <span class="material-icons-outlined text-lg">school</span>
+                        Open Source Academic Project
+                    </h3>
+                    <p class="text-sm text-blue-700 dark:text-blue-400">
+                        This is an open source academic project for educational purposes. It is not affiliated with ABB Ltd.
+                    </p>
+                </div>
+
+                <!-- Data We Collect -->
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span class="material-icons-outlined text-primary">data_usage</span>
+                        Data We Collect & Process
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-green-500 text-lg flex-shrink-0">check_circle</span>
+                            <span><strong>Chat Messages:</strong> Your questions are sent to Google's Gemini AI to generate responses. Messages are not permanently stored by this application.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-green-500 text-lg flex-shrink-0">check_circle</span>
+                            <span><strong>Theme Preferences:</strong> Your dark/light mode preference is stored locally in your browser (localStorage).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-green-500 text-lg flex-shrink-0">check_circle</span>
+                            <span><strong>Cookie Consent:</strong> Your consent choice is stored locally to remember your preference.</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Third-Party Services -->
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span class="material-icons-outlined text-primary">cloud</span>
+                        Third-Party Services
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-blue-500 text-lg flex-shrink-0">smart_toy</span>
+                            <span><strong>Google Gemini AI:</strong> Processes chat messages to generate responses. Subject to <a href="https://policies.google.com/privacy" target="_blank" class="text-primary underline">Google's Privacy Policy</a>.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-orange-500 text-lg flex-shrink-0">hosting</span>
+                            <span><strong>Firebase Hosting:</strong> Hosts this application. Subject to <a href="https://firebase.google.com/support/privacy" target="_blank" class="text-primary underline">Firebase's Privacy Policy</a>.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-red-500 text-lg flex-shrink-0">library_books</span>
+                            <span><strong>ABB Library:</strong> Product documentation is sourced from ABB's public library. Subject to <a href="https://new.abb.com/privacy-policy" target="_blank" class="text-primary underline">ABB's Privacy Policy</a>.</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Your Rights (GDPR) -->
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span class="material-icons-outlined text-primary">gavel</span>
+                        Your Rights Under GDPR
+                    </h3>
+                    <p class="text-sm mb-3">Under the General Data Protection Regulation (GDPR), you have the following rights:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                            <h4 class="font-medium text-sm flex items-center gap-1">
+                                <span class="material-icons-outlined text-sm text-primary">visibility</span>
+                                Right of Access
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Request access to your personal data.</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                            <h4 class="font-medium text-sm flex items-center gap-1">
+                                <span class="material-icons-outlined text-sm text-primary">edit</span>
+                                Right to Rectification
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Request correction of inaccurate data.</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                            <h4 class="font-medium text-sm flex items-center gap-1">
+                                <span class="material-icons-outlined text-sm text-primary">delete</span>
+                                Right to Erasure
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Request deletion of your personal data.</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                            <h4 class="font-medium text-sm flex items-center gap-1">
+                                <span class="material-icons-outlined text-sm text-primary">download</span>
+                                Right to Portability
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Request your data in a portable format.</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                            <h4 class="font-medium text-sm flex items-center gap-1">
+                                <span class="material-icons-outlined text-sm text-primary">block</span>
+                                Right to Object
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Object to processing of your data.</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                            <h4 class="font-medium text-sm flex items-center gap-1">
+                                <span class="material-icons-outlined text-sm text-primary">pause_circle</span>
+                                Right to Restrict
+                            </h4>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Request restriction of processing.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Retention -->
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span class="material-icons-outlined text-primary">schedule</span>
+                        Data Retention
+                    </h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-gray-400 text-lg flex-shrink-0">timer</span>
+                            <span><strong>Chat History:</strong> Stored only in your browser session. Cleared when you refresh or close the page.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="material-icons-outlined text-gray-400 text-lg flex-shrink-0">timer</span>
+                            <span><strong>Preferences:</strong> Stored indefinitely in localStorage until you clear browser data.</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Manage Your Data -->
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span class="material-icons-outlined text-primary">settings</span>
+                        Manage Your Data
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="clearAllLocalData()" class="inline-flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
+                            <span class="material-icons-outlined text-lg">delete_forever</span>
+                            Clear All Local Data
+                        </button>
+                        <button onclick="exportLocalData()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+                            <span class="material-icons-outlined text-lg">download</span>
+                            Export My Data
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Contact -->
+                <section class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        <span class="material-icons-outlined text-primary">contact_mail</span>
+                        Contact
+                    </h3>
+                    <p class="text-sm">
+                        For privacy-related inquiries or to exercise your GDPR rights, please contact the project maintainer through
+                        <a href="https://github.com/Pezhman-Mazaheri/ABB_agentic_customer_support" target="_blank" class="text-primary underline">GitHub</a>.
+                    </p>
+                </section>
+            </div>
+            <!-- Modal Footer -->
+            <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4 bg-gray-50 dark:bg-gray-900 flex justify-end">
+                <button onclick="closePrivacyModal()" class="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark sticky top-0 z-50 h-16 flex items-center justify-between px-6 shadow-sm">
         <div class="flex items-center gap-4">
@@ -71,7 +273,10 @@
                 </span>
                 <input id="searchInput" class="w-64 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-full text-sm focus:ring-primary focus:border-primary block" placeholder="Search products..." type="text"/>
             </div>
-            <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors" onclick="toggleDarkMode()">
+            <button type="button" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors" onclick="openPrivacyModal()" title="Privacy Policy">
+                <span class="material-icons-outlined">privacy_tip</span>
+            </button>
+            <button type="button" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors" onclick="toggleDarkMode()" title="Toggle Dark Mode">
                 <span class="material-icons-outlined">dark_mode</span>
             </button>
         </div>
@@ -762,6 +967,125 @@ Would you like help with installation, specifications, or troubleshooting?`;
         if (localStorage.getItem('darkMode') === 'true') {
             document.documentElement.classList.add('dark');
         }
+
+        // ============================================
+        // GDPR / Privacy Functions
+        // ============================================
+
+        // Check if user has given consent
+        function checkCookieConsent() {
+            const consent = localStorage.getItem('cookieConsent');
+            if (!consent) {
+                showCookieConsent();
+            }
+        }
+
+        // Show cookie consent banner
+        function showCookieConsent() {
+            const banner = document.getElementById('cookieConsent');
+            banner.style.display = 'block';
+            setTimeout(() => {
+                banner.classList.remove('translate-y-full');
+                banner.classList.add('translate-y-0');
+            }, 100);
+        }
+
+        // Hide cookie consent banner
+        function hideCookieConsent() {
+            const banner = document.getElementById('cookieConsent');
+            banner.classList.remove('translate-y-0');
+            banner.classList.add('translate-y-full');
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 300);
+        }
+
+        // Accept all cookies
+        function acceptCookies() {
+            localStorage.setItem('cookieConsent', 'accepted');
+            localStorage.setItem('cookieConsentDate', new Date().toISOString());
+            hideCookieConsent();
+        }
+
+        // Decline optional cookies
+        function declineCookies() {
+            localStorage.setItem('cookieConsent', 'declined');
+            localStorage.setItem('cookieConsentDate', new Date().toISOString());
+            hideCookieConsent();
+        }
+
+        // Open privacy modal
+        function openPrivacyModal() {
+            document.getElementById('privacyModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close privacy modal
+        function closePrivacyModal() {
+            document.getElementById('privacyModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // Clear all local data (GDPR right to erasure)
+        function clearAllLocalData() {
+            if (confirm('This will clear all your local data including preferences and consent choices. Are you sure?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                alert('All local data has been cleared. The page will now reload.');
+                location.reload();
+            }
+        }
+
+        // Export local data (GDPR right to portability)
+        function exportLocalData() {
+            const data = {
+                exportDate: new Date().toISOString(),
+                localStorage: {},
+                sessionStorage: {}
+            };
+
+            // Collect localStorage data
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                data.localStorage[key] = localStorage.getItem(key);
+            }
+
+            // Collect sessionStorage data
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                data.sessionStorage[key] = sessionStorage.getItem(key);
+            }
+
+            // Download as JSON file
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `abb-support-data-export-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePrivacyModal();
+            }
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('privacyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'privacyModal') {
+                closePrivacyModal();
+            }
+        });
+
+        // Check cookie consent on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkCookieConsent();
+        });
     </script>
 </body>
 </html>

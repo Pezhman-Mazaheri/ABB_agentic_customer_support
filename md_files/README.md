@@ -17,6 +17,24 @@
 
 ---
 
+## 🌐 Live Deployment
+
+> **🚀 This application is deployed and live at: [https://abb-agentic-support-2026.web.app/](https://abb-agentic-support-2026.web.app/)**
+
+---
+
+## 📚 Academic Project Notice
+
+> **⚠️ Open Source Academic Project**
+>
+> This is an open source academic project developed for educational and demonstration purposes. It is **not affiliated with, endorsed by, or sponsored by ABB Ltd.** The project showcases the integration of modern AI technologies with enterprise product documentation systems.
+>
+> - **Purpose:** Educational demonstration of AI-powered customer support systems
+> - **License:** MIT License - free to use, modify, and distribute
+> - **Contributions:** Welcome from the open source community
+
+---
+
 ## 🎯 Overview
 
 ABB Agentic Customer Support is an intelligent web application that enables customers to interact with ABB product documentation using natural language. Users can browse product categories, select technical manuals, and ask questions about the products - receiving accurate, context-aware responses powered by Google's Gemini 2.0 AI.

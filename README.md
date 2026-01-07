@@ -4,8 +4,6 @@
 
 ![ABB Logo](docs/images/abb-logo.png)
 
-**AI-Powered Technical Documentation Assistant for Industrial Products**
-
 [![Firebase](https://img.shields.io/badge/Firebase-Deployed-orange?logo=firebase)](https://abb-agentic-support-2026.web.app)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://python.org)
 [![Google AI](https://img.shields.io/badge/Google_AI-Gemini_2.0-4285F4?logo=google)](https://ai.google.dev)
@@ -14,6 +12,24 @@
 [Live Demo](https://abb-agentic-support-2026.web.app) • [API Documentation](docs/API.md) • [Architecture](#architecture)
 
 </div>
+
+---
+
+## 🌐 Live Deployment
+
+> **🚀 This application is deployed and live at: [https://abb-agentic-support-2026.web.app/](https://abb-agentic-support-2026.web.app/)**
+
+---
+
+## 📚 Academic Project Notice
+
+> **⚠️ Open Source Academic Project**
+>
+> This is an open source academic project developed for educational and demonstration purposes. It is **not affiliated with, endorsed by, or sponsored by ABB Ltd.** The project showcases the integration of modern AI technologies with enterprise product documentation systems.
+>
+> - **Purpose:** Educational demonstration of AI-powered customer support systems
+> - **License:** MIT License - free to use, modify, and distribute
+> - **Contributions:** Welcome from the open source community
 
 ---
 
