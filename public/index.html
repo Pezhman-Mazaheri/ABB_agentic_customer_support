@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ABB Product Support - AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#e62f16",
+                        secondary: "#1F2937",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#211311",
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1E293B",
+                        "border-light": "#E5E7EB",
+                        "border-dark": "#334155"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: "Hanken Grotesk"
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 2000px;
+        }
+        .chat-disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 font-sans min-h-screen transition-colors duration-200">
+    <!-- Navigation -->
+    <nav class="bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark sticky top-0 z-50 h-16 flex items-center justify-between px-6 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-primary font-bold text-3xl tracking-tighter">ABB</span>
+                <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">AI Customer Support</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="relative hidden md:block">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="material-icons-outlined text-gray-400 text-xl">search</span>
+                </span>
+                <input id="searchInput" class="w-64 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-border-light dark:border-border-dark rounded-full text-sm focus:ring-primary focus:border-primary block" placeholder="Search products..." type="text"/>
+            </div>
+            <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors" onclick="toggleDarkMode()">
+                <span class="material-icons-outlined">dark_mode</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex h-[calc(100vh-64px)] overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-80 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex flex-col overflow-y-auto hidden md:flex">
+            <div class="p-4 border-b border-border-light dark:border-border-dark bg-gray-50/50 dark:bg-gray-800/20">
+                <h2 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Browse Categories</h2>
+                <div class="flex flex-col gap-1">
+                    <button onclick="resetSelection()" class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-border-light dark:border-border-dark rounded shadow-sm text-sm font-medium text-primary">
+                        <span class="material-icons-outlined text-lg">category</span>
+                        All Categories
+                    </button>
+                </div>
+            </div>
+            <div id="categoryTree" class="p-2 space-y-1">
+                <!-- Category tree will be loaded here -->
+                <div class="loading-skeleton h-8 rounded mb-2"></div>
+                <div class="loading-skeleton h-8 rounded mb-2"></div>
+                <div class="loading-skeleton h-8 rounded mb-2"></div>
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <main class="flex-1 flex flex-col bg-background-light dark:bg-background-dark overflow-hidden relative">
+            <!-- Breadcrumb Header -->
+            <header class="bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark px-8 py-4 flex flex-col gap-2">
+                <nav id="breadcrumb" class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <a class="hover:text-primary transition-colors cursor-pointer" onclick="resetSelection()">Home</a>
+                </nav>
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1 id="pageTitle" class="text-2xl font-bold text-gray-900 dark:text-white">Select a Category</h1>
+                        <p id="pageDescription" class="text-gray-500 dark:text-gray-400 mt-1 text-sm">Choose a product category from the sidebar to begin.</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+                <!-- Products Table -->
+                <div id="productsContainer" class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg shadow-sm overflow-hidden flex-shrink-0 hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                            <thead class="bg-gray-50 dark:bg-gray-800/50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Document Title</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsBody" class="divide-y divide-border-light dark:divide-border-dark">
+                                <!-- Products will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Loading Skeleton for Products -->
+                <div id="productsLoading" class="hidden">
+                    <div class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg p-4">
+                        <div class="loading-skeleton h-12 rounded mb-3"></div>
+                        <div class="loading-skeleton h-12 rounded mb-3"></div>
+                        <div class="loading-skeleton h-12 rounded mb-3"></div>
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div id="chatContainer" class="flex-1 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-lg flex flex-col overflow-hidden min-h-[450px]">
+                    <!-- Chat Header -->
+                    <div class="bg-primary px-6 py-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white/20 p-2 rounded-full text-white backdrop-blur-sm">
+                                <span class="material-icons-outlined text-xl">smart_toy</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-sm">ABB Automated Support</h3>
+                                <div id="chatStatus" class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                    <span class="text-xs text-white/90 font-medium">Select a document to start chatting</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="clearChat()" class="text-white/70 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors">
+                            <span class="material-icons-outlined text-lg">refresh</span>
+                        </button>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50 dark:bg-gray-900/20">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-primary/10 p-2 rounded-full text-primary flex-shrink-0">
+                                <span class="material-icons-outlined text-lg">smart_toy</span>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
+                                <p class="text-sm text-gray-700 dark:text-gray-300">Hello! I'm your ABB Product Support Assistant. Please select a product document from the list above, and I'll help you with any questions about it.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div id="chatInputArea" class="p-4 border-t border-border-light dark:border-border-dark bg-white dark:bg-gray-800 chat-disabled">
+                        <div class="flex items-center gap-3">
+                            <input id="chatInput" type="text" placeholder="Type your question here..." class="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-border-light dark:border-border-dark rounded-full text-sm focus:ring-primary focus:border-primary" onkeypress="handleChatKeypress(event)"/>
+                            <button type="button" id="sendButton" onclick="sendMessage()" class="bg-primary hover:bg-primary/90 text-white p-3 rounded-full transition-colors shadow-md">
+                                <span class="material-icons-outlined text-lg">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // State management
+        let hierarchyData = [];
+        let selectedCategory = null;
+        let selectedProduct = null;
+        let currentFileUri = null;
+        let currentFileName = null;
+        let currentProductTitle = null;
+        let currentDownloadUrl = null;
+        let chatHistory = [];
+
+        // API base URL (change for production)
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://127.0.0.1:5001/abb-agentic-support-2026/us-central1'
+            : 'https://us-central1-abb-agentic-support-2026.cloudfunctions.net';
+
+        // ABB Library base URL for search
+        const ABB_LIBRARY_URL = 'https://library.abb.com';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadHierarchy();
+            setupSearch();
+        });
+
+        // Load hierarchy data
+        async function loadHierarchy() {
+            try {
+                const response = await fetch('/hierarchy.json');
+                hierarchyData = await response.json();
+                renderCategoryTree(hierarchyData);
+            } catch (error) {
+                console.error('Failed to load hierarchy:', error);
+                document.getElementById('categoryTree').innerHTML =
+                    '<p class="text-red-500 p-4">Failed to load categories</p>';
+            }
+        }
+
+        // Render category tree
+        function renderCategoryTree(nodes, parentEl = null, level = 0) {
+            const container = parentEl || document.getElementById('categoryTree');
+            if (!parentEl) container.innerHTML = '';
+
+            nodes.forEach(node => {
+                const hasChildren = node.children && node.children.length > 0;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'category-item';
+                itemDiv.innerHTML = `
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors text-sm"
+                         style="padding-left: ${12 + level * 16}px"
+                         onclick="selectCategory('${node.id}', '${escapeHtml(node.full_path)}', '${escapeHtml(node.name)}', event)">
+                        ${hasChildren ? `
+                            <span class="material-icons-outlined text-gray-400 text-sm accordion-icon transition-transform" data-id="${node.id}">chevron_right</span>
+                        ` : `
+                            <span class="w-5"></span>
+                        `}
+                        <span class="material-icons-outlined text-gray-400 text-sm">${hasChildren ? 'folder' : 'description'}</span>
+                        <span class="truncate flex-1">${node.name}</span>
+                    </div>
+                    ${hasChildren ? `<div class="accordion-content" id="children-${node.id}"></div>` : ''}
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Select category
+        function selectCategory(id, fullPath, name, event) {
+            event.stopPropagation();
+
+            // Find the node
+            const node = findNodeById(hierarchyData, id);
+            if (!node) return;
+
+            // Toggle accordion if has children
+            if (node.children && node.children.length > 0) {
+                const childrenContainer = document.getElementById(`children-${id}`);
+                const icon = document.querySelector(`.accordion-icon[data-id="${id}"]`);
+
+                if (childrenContainer.classList.contains('open')) {
+                    childrenContainer.classList.remove('open');
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    // Render children if not already rendered
+                    if (childrenContainer.children.length === 0) {
+                        renderCategoryTree(node.children, childrenContainer, getNodeLevel(fullPath));
+                    }
+                    childrenContainer.classList.add('open');
+                    icon.style.transform = 'rotate(90deg)';
+                }
+            }
+
+            // Update selection
+            selectedCategory = { id, fullPath, name };
+            updateBreadcrumb(fullPath);
+            updatePageHeader(name, fullPath);
+
+            // Search for products
+            searchProducts(fullPath);
+        }
+
+        // Find node by ID
+        function findNodeById(nodes, id) {
+            for (const node of nodes) {
+                if (node.id === id) return node;
+                if (node.children) {
+                    const found = findNodeById(node.children, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // Get node level from path
+        function getNodeLevel(fullPath) {
+            return fullPath.split(' > ').length;
+        }
+
+        // Update breadcrumb
+        function updateBreadcrumb(fullPath) {
+            const parts = fullPath.split(' > ');
+            const breadcrumb = document.getElementById('breadcrumb');
+            breadcrumb.innerHTML = `<a class="hover:text-primary transition-colors cursor-pointer" onclick="resetSelection()">Home</a>`;
+
+            let currentPath = '';
+            parts.forEach((part, index) => {
+                currentPath += (index > 0 ? ' > ' : '') + part;
+                breadcrumb.innerHTML += `
+                    <span class="mx-2 text-gray-300 dark:text-gray-600">/</span>
+                    <span class="${index === parts.length - 1 ? 'text-gray-900 dark:text-white font-medium' : 'hover:text-primary cursor-pointer'}">${part}</span>
+                `;
+            });
+        }
+
+        // Update page header
+        function updatePageHeader(name, fullPath) {
+            document.getElementById('pageTitle').textContent = name;
+            document.getElementById('pageDescription').textContent = `Browse documents and manuals for ${name}`;
+        }
+
+        // Transform category path to search query
+        function transformPathToQuery(fullPath) {
+            // Split the path and remove generic root nodes
+            const parts = fullPath.split(' > ');
+            const genericRoots = ['ABB Products', 'All Categories', 'Products'];
+            const filteredParts = parts.filter(p => !genericRoots.includes(p));
+            return filteredParts.join(' ');
+        }
+
+        // Search products on ABB Library - Shows embedded search frame
+        async function searchProducts(fullPath) {
+            const container = document.getElementById('productsContainer');
+            const loading = document.getElementById('productsLoading');
+            const body = document.getElementById('productsBody');
+
+            container.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            // Transform path to search query
+            const searchQuery = transformPathToQuery(fullPath);
+            console.log('Searching for:', searchQuery);
+
+            // Build ABB Library search URL
+            const searchUrl = `${ABB_LIBRARY_URL}/r?cid=pscat&lang=en&q=${encodeURIComponent(searchQuery)}`;
+
+            // Show the search interface with ABB Library link and sample products
+            body.innerHTML = `
+                <tr>
+                    <td colspan="2" class="px-6 py-6">
+                        <div class="text-center mb-4">
+                            <p class="text-gray-600 dark:text-gray-400 mb-3">
+                                <span class="material-icons-outlined text-primary text-2xl align-middle mr-1">search</span>
+                                Searching ABB Library for: <strong>"${escapeHtml(searchQuery)}"</strong>
+                            </p>
+                            <a href="${searchUrl}" target="_blank"
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors text-sm font-medium">
+                                <span class="material-icons-outlined text-lg">open_in_new</span>
+                                Open ABB Library Search
+                            </a>
+                        </div>
+                        <div class="border-t border-border-light dark:border-border-dark pt-4 mt-4">
+                            <p class="text-xs text-gray-500 dark:text-gray-500 text-center mb-3">
+                                Sample documents (click to chat):
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            // Add sample products based on the search query for demo purposes
+            const sampleProducts = generateSampleProducts(searchQuery);
+            sampleProducts.forEach(product => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-icons-outlined text-primary">description</span>
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">${escapeHtml(product.title)}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="${escapeHtml(product.download_url)}" target="_blank"
+                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-500 text-white text-xs font-medium rounded-full hover:bg-gray-600 transition-colors">
+                                <span class="material-icons-outlined text-sm">download</span>
+                                PDF
+                            </a>
+                            <button type="button" onclick="selectProduct('${escapeHtml(product.title).replace(/'/g, "\\'")}', '${escapeHtml(product.download_url).replace(/'/g, "\\'")}')"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-full hover:bg-primary/90 transition-colors">
+                                <span class="material-icons-outlined text-sm">chat</span>
+                                Chat
+                            </button>
+                        </div>
+                    </td>
+                `;
+                body.appendChild(row);
+            });
+
+            container.classList.remove('hidden');
+            loading.classList.add('hidden');
+        }
+
+        // Generate sample products based on search query for demo
+        function generateSampleProducts(searchQuery) {
+            const query = searchQuery.toLowerCase();
+
+            // Product database with real ABB Library links
+            const productDatabase = {
+                'hpr': [
+                    { title: 'High Power Rectifiers for primary aluminum smelting', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3BHS352574&LanguageCode=en&Action=Launch' },
+                    { title: 'High power rectifiers - Product portfolio overview', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=9AKK107492A3182&LanguageCode=en&Action=Launch' },
+                    { title: 'MCR1000 Medium Current Rectifier', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3BHS546772E01&LanguageCode=en&Action=Launch' }
+                ],
+                'rectifier': [
+                    { title: 'High Power Rectifiers for the electrowinning industry', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3BHS352577&LanguageCode=en&Action=Launch' },
+                    { title: 'High Power Rectifiers for Hydrogen Production', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=9AKK107992A8938&LanguageCode=en&Action=Launch' },
+                    { title: 'High Power Rectifiers for the DC Arc Furnace Industry', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3BHS352576&LanguageCode=en&Action=Launch' }
+                ],
+                'mcr': [
+                    { title: 'MCR1000 Medium Current Rectifier Leaflet', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3BHS546772E01&LanguageCode=en&Action=Launch' }
+                ],
+                'drives': [
+                    { title: 'ACS880 single drives catalog', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3AUA0000098111&LanguageCode=en&Action=Launch' },
+                    { title: 'ACS580 general purpose drives catalog', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3AUA0000157557&LanguageCode=en&Action=Launch' }
+                ],
+                'robotics': [
+                    { title: 'IRB 6700 Industrial Robot Data Sheet', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=ROB0293EN&LanguageCode=en&Action=Launch' },
+                    { title: 'IRB 1600 Industrial Robot Data Sheet', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=ROB0295EN&LanguageCode=en&Action=Launch' }
+                ],
+                'control': [
+                    { title: 'AC500 PLC Platform Overview', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=3ADR010068&LanguageCode=en&Action=Launch' }
+                ],
+                'motor': [
+                    { title: 'Low voltage IE5 SynRM motors catalog', download_url: 'https://search.abb.com/library/Download.aspx?DocumentID=9AKK107046A4890&LanguageCode=en&Action=Launch' }
+                ]
+            };
+
+            // Find matching products
+            let products = [];
+            for (const [key, prods] of Object.entries(productDatabase)) {
+                if (query.includes(key)) {
+                    products = products.concat(prods);
+                }
+            }
+
+            // If no specific matches, return generic products
+            if (products.length === 0) {
+                products = [
+                    { title: `${searchQuery} - Technical Documentation`, download_url: `https://library.abb.com/r?cid=pscat&lang=en&q=${encodeURIComponent(searchQuery)}` },
+                    { title: `${searchQuery} - User Manual`, download_url: `https://library.abb.com/r?cid=pscat&lang=en&q=${encodeURIComponent(searchQuery)}` }
+                ];
+            }
+
+            return products.slice(0, 5); // Limit to 5 products
+        }
+
+        // Select product and ingest manual
+        async function selectProduct(title, downloadUrl) {
+            selectedProduct = { title, downloadUrl };
+
+            // Store product info for display purposes
+            currentProductTitle = title;
+            currentDownloadUrl = downloadUrl;
+
+            // Update chat status to show loading
+            const chatStatus = document.getElementById('chatStatus');
+            chatStatus.innerHTML = `
+                <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                <span class="text-xs text-white/90 font-medium">Preparing: ${title}...</span>
+            `;
+
+            // Disable chat while loading
+            document.getElementById('chatInputArea').classList.add('chat-disabled');
+
+            // Clear previous chat
+            clearChat();
+
+            // Initialize with download URL as fallback
+            currentFileUri = downloadUrl;
+            currentFileName = title;
+
+            // Ingest the PDF in the background
+            try {
+                const response = await fetch(`${API_BASE}/ingest_manual`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ download_url: downloadUrl })
+                });
+
+                const data = await response.json();
+
+                if (data.file_name) {
+                    // Store the Gemini file reference for chat
+                    currentFileName = data.file_name;
+                    currentFileUri = data.file_uri || downloadUrl;
+                }
+
+                // Enable chat
+                document.getElementById('chatInputArea').classList.remove('chat-disabled');
+                chatStatus.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-xs text-white/90 font-medium">Ready: ${title}</span>
+                `;
+
+                // Add welcome message
+                addChatMessage('assistant', `I'm ready to help with "${title}". What would you like to know?`);
+
+            } catch (error) {
+                console.error('Ingest error:', error);
+                // Enable chat anyway in demo mode
+                document.getElementById('chatInputArea').classList.remove('chat-disabled');
+                chatStatus.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-xs text-white/90 font-medium">Ready: ${title}</span>
+                `;
+                addChatMessage('assistant', `I'm ready to help with "${title}". What would you like to know?`);
+            }
+        }
+
+        // Send chat message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message || !currentFileName) return;
+
+            input.value = '';
+            addChatMessage('user', message);
+
+            // Show typing indicator
+            const typingId = addTypingIndicator();
+
+            try {
+                // Try to call the Cloud Function first
+                const response = await fetch(`${API_BASE}/chat_agent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_message: message,
+                        file_uri: currentFileUri,
+                        file_name: currentFileName
+                    })
+                });
+
+                const data = await response.json();
+                removeTypingIndicator(typingId);
+
+                if (data.response) {
+                    addChatMessage('assistant', data.response);
+                } else {
+                    throw new Error(data.error || 'No response received');
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                // Demo mode response when Cloud Functions are not available
+                const demoResponse = generateDemoResponse(message);
+                addChatMessage('assistant', demoResponse);
+            }
+        }
+
+        // Generate demo response when backend is not available
+        function generateDemoResponse(question) {
+            const lowerQ = question.toLowerCase();
+            const productName = currentProductTitle || 'this product';
+            const pdfUrl = currentDownloadUrl || currentFileUri;
+
+            if (lowerQ.includes('spec') || lowerQ.includes('technical')) {
+                return `For detailed technical specifications of "${productName}", please download and review the PDF document. The full specifications include electrical ratings, dimensions, and performance characteristics.
+
+📥 [Download the PDF](${pdfUrl}) to view complete specifications.`;
+            }
+
+            if (lowerQ.includes('install') || lowerQ.includes('setup')) {
+                return `Installation instructions for "${productName}" are detailed in the PDF manual. General installation steps typically include:
+
+1. **Site Preparation** - Ensure proper ventilation and mounting space
+2. **Electrical Connections** - Follow the wiring diagrams in the manual
+3. **Configuration** - Set parameters according to your application
+4. **Testing** - Verify operation before full deployment
+
+📥 [Download the PDF](${pdfUrl}) for complete installation guidelines.`;
+            }
+
+            if (lowerQ.includes('error') || lowerQ.includes('troubleshoot') || lowerQ.includes('problem')) {
+                return `For troubleshooting "${productName}", the PDF manual contains diagnostic codes and solutions. Common troubleshooting steps:
+
+1. Check all connections and power supply
+2. Review error codes in the display/logs
+3. Consult the troubleshooting section in the manual
+4. Contact ABB support if the issue persists
+
+📥 [Download the PDF](${pdfUrl}) for the complete troubleshooting guide.`;
+            }
+
+            return `Thank you for your question about "${productName}".
+
+To provide accurate information from the actual document, the Cloud Functions backend needs to be deployed with the Gemini API. This enables:
+
+✅ **PDF Processing** - Automatic extraction of document content
+✅ **AI-Powered Q&A** - Context-aware responses from the manual
+✅ **Technical Support** - Specific answers to your product questions
+
+For now, please download the PDF document for detailed information:
+📥 [Download PDF](${pdfUrl})
+
+Would you like help with installation, specifications, or troubleshooting?`;
+        }
+
+        // Add chat message
+        function addChatMessage(role, content) {
+            const container = document.getElementById('chatMessages');
+            const isUser = role === 'user';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+            messageDiv.innerHTML = `
+                <div class="${isUser ? 'bg-primary' : 'bg-primary/10'} p-2 rounded-full ${isUser ? 'text-white' : 'text-primary'} flex-shrink-0">
+                    <span class="material-icons-outlined text-lg">${isUser ? 'person' : 'smart_toy'}</span>
+                </div>
+                <div class="${isUser ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'} rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} px-4 py-3 shadow-sm max-w-[80%]">
+                    <p class="text-sm whitespace-pre-wrap">${formatMessage(content)}</p>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+
+            chatHistory.push({ role, content });
+        }
+
+        // Add typing indicator
+        function addTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const id = 'typing-' + Date.now();
+
+            const typingDiv = document.createElement('div');
+            typingDiv.id = id;
+            typingDiv.className = 'flex items-start gap-3';
+            typingDiv.innerHTML = `
+                <div class="bg-primary/10 p-2 rounded-full text-primary flex-shrink-0">
+                    <span class="material-icons-outlined text-lg">smart_toy</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+                    <div class="flex gap-1">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+
+            return id;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator(id) {
+            const element = document.getElementById(id);
+            if (element) element.remove();
+        }
+
+        // Format message (basic markdown support)
+        function formatMessage(content) {
+            return escapeHtml(content)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle chat keypress
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Clear chat
+        function clearChat() {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="bg-primary/10 p-2 rounded-full text-primary flex-shrink-0">
+                        <span class="material-icons-outlined text-lg">smart_toy</span>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
+                        <p class="text-sm text-gray-700 dark:text-gray-300">Hello! I'm your ABB Product Support Assistant. Please select a product document from the list above, and I'll help you with any questions about it.</p>
+                    </div>
+                </div>
+            `;
+            chatHistory = [];
+        }
+
+        // Reset selection
+        function resetSelection() {
+            selectedCategory = null;
+            selectedProduct = null;
+            currentFileUri = null;
+            currentFileName = null;
+
+            document.getElementById('breadcrumb').innerHTML = `<a class="hover:text-primary transition-colors cursor-pointer" onclick="resetSelection()">Home</a>`;
+            document.getElementById('pageTitle').textContent = 'Select a Category';
+            document.getElementById('pageDescription').textContent = 'Choose a product category from the sidebar to begin.';
+            document.getElementById('productsContainer').classList.add('hidden');
+            document.getElementById('chatInputArea').classList.add('chat-disabled');
+            document.getElementById('chatStatus').innerHTML = `
+                <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                <span class="text-xs text-white/90 font-medium">Select a document to start chatting</span>
+            `;
+            clearChat();
+        }
+
+        // Setup search
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            let debounceTimer;
+
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    filterCategories(e.target.value);
+                }, 300);
+            });
+        }
+
+        // Filter categories
+        function filterCategories(query) {
+            const items = document.querySelectorAll('.category-item');
+            const lowerQuery = query.toLowerCase();
+
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(lowerQuery) ? '' : 'none';
+            });
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        }
+
+        // Initialize dark mode from localStorage
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</body>
+</html>
+

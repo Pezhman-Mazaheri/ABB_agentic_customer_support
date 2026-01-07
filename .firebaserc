@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "abb-agentic-support-2026"
+  },
+  "targets": {
+    "abb-agentic-support-2026": {
+      "hosting": {
+        "abb-support": [
+          "abb-agentic-support-2026"
+        ]
+      }
+    }
+  }
+}
+
